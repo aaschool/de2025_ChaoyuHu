@@ -1,25 +1,25 @@
 #include <Servo.h>
 
-const int trigPin = 2;      
-const int echoPin = 3;      
-const int servoPin = 9;    
-const int servoLedPin = 13; 
+const int trigPin = 2;
+const int echoPin = 3;
+const int servoPin = 9;
+const int servoLedPin = 13;
 
-const int triggerThreshold = 5;                  
-const unsigned long detectionTimeRequired = 2000;  
+const int triggerThreshold = 5;
+const unsigned long detectionTimeRequired = 2000;
 
-const int targetAngle = 120;                   
-const unsigned long rotationDuration = 10000;    
-const unsigned long holdDuration = 15000;        
-const unsigned long returnDuration = 5000;      
+const int targetAngle = 120;
+const unsigned long rotationDuration = 10000;
+const unsigned long holdDuration = 15000;
+const unsigned long returnDuration = 5000;
 
 Servo myServo;
 bool servoTriggered = false;
-unsigned long detectionStartTime = 0; 
+unsigned long detectionStartTime = 0;
 
 void setup() {
   Serial.begin(9600);
-  
+
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   
