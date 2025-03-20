@@ -1,0 +1,100 @@
+#include <Servo.h>
+
+const int trigPin = 2;      
+const int echoPin = 3;      
+const int servoPin = 9;    
+const int servoLedPin = 13; 
+
+const int triggerThreshold = 5;                  
+const unsigned long detectionTimeRequired = 2000;  
+
+const int targetAngle = 120;                   
+const unsigned long rotationDuration = 10000;    
+const unsigned long holdDuration = 15000;        
+const unsigned long returnDuration = 5000;      
+
+Servo myServo;
+bool servoTriggered = false;
+unsigned long detectionStartTime = 0; 
+
+void setup() {
+  Serial.begin(9600);
+  
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  
+  myServo.attach(servoPin);
+  myServo.write(0);
+  pinMode(servoLedPin, OUTPUT);
+  digitalWrite(servoLedPin, LOW);  // 初始时关闭 LED
+}
+
+
+void loop() {
+  if (!servoTriggered) {
+    float distance = measureDistance();
+    Serial.print("Distance: ");
+    Serial.print(distance);
+    Serial.println(" cm");
+    
+    if (distance > 0 && distance < triggerThreshold) {
+      if (detectionStartTime == 0) {
+        detectionStartTime = millis();
+      }
+      if (millis() - detectionStartTime >= detectionTimeRequired) {
+        servoTriggered = true;
+        rotateServo();
+        detectionStartTime = 0;  
+      }
+    } else {
+      detectionStartTime = 0;
+    }
+  }
+  
+  delay(100);  
+}
+
+float measureDistance() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+ 
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  long duration = pulseIn(echoPin, HIGH, 30000);
+  
+  float distance = duration * 0.034 / 2;
+  return distance;
+}
+
+void rotateServo() {
+  Serial.println("Trigger activated: rotating servo 120° over 10 seconds...");
+  
+  digitalWrite(servoLedPin, HIGH);
+  
+  int steps = targetAngle;  // 每步 1°
+  unsigned long stepDelay = rotationDuration / steps;
+  
+  for (int angle = 0; angle <= targetAngle; angle++) {
+    myServo.write(angle);
+    delay(stepDelay);
+  }
+  
+  Serial.println("Holding at 120° for 15 seconds...");
+  delay(holdDuration);
+  
+  int returnSteps = targetAngle;
+  unsigned long returnDelay = returnDuration / returnSteps;
+  
+  Serial.println("Returning servo to 0°...");
+  for (int angle = targetAngle; angle >= 0; angle--) {
+    myServo.write(angle);
+    delay(returnDelay);
+  }
+  
+  digitalWrite(servoLedPin, LOW);
+  
+  Serial.println("Servo returned to 0°. Ready for next trigger.");
+  servoTriggered = false;
+}
